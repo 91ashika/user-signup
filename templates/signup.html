@@ -5,14 +5,14 @@
 <form action="" method="post">
     <label for="username">
         Username:
-        <input type="text" name="username" id="username"/>
+        <input type="text" name="username" id="username" value="{{username}}"/>
         <span class="error">{{usererror}}</span>
     </label>
     
     <label>
         Password:
         <input type="password" name="password"/>
-        
+        <span class="error">{{pwd_error}}</span>
 
     </label>
     <label>
@@ -22,8 +22,8 @@
     </label>
     <label>
         Email (optional):
-        <input type="text" name="email"/>
-        
+        <input type="text" name="email" value="{{email}}"/>
+        <span class="error">{{email_error}}</span>
     </label>
     <input type="submit" value="Submit"/>
 </form>

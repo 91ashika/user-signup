@@ -1,20 +1,17 @@
 from flask import Flask, request, redirect, render_template
+import re
 
 app = Flask(__name__)
 
 app.config['DEBUG'] = True  
 
-@app.route("/welcome", methods=['POST'])
+@app.route("/welcome")
 def welcome():
-    user= request.form['username']
-    pwd= request.form['password']
-    verify_pwd = request.form['verify_password']
-    email= request.form['email']
-    if not user:
-        error= "That's not a valid username"
-        #return render_template("signup.html", usererror=error)
-        return redirect("/?usererror="+error)
-
+    user= request.args.get("username")
+    #user= request.form['username']
+    #pwd= request.form['password']
+    #verify_pwd = request.form['verify_password']
+    #email= request.form['email']
     return render_template('welcome.html',user=user)
 
 
@@ -28,10 +25,38 @@ def validate_user(username):
         return ""
 
 
-def validate_password(password,verify_pwd):
+def validate_password(password):
 
-    if password != verify_pwd or not password :
+    if not password :
+        return "That's not a valid password"
+    else:
+        if len(password)<3 or len(password)>20 or " " in password :
+            return "That's not a valid password"
+
+        else:
+            return ""    
+
+def verify_passwords(password,verify_pwd):
+    if password != verify_pwd:
         return "The passwords dont match"
+    else:
+        return "" 
+
+def validate_email(email):
+    if not email:
+        return ""
+    else:
+        if len(email)<3 or len(email)>20:
+            return "That's not a valid email"
+        else:
+            pattern = r"^[a-zA-Z0-9+-_!.]+@[a-zA-Z0-9]+\.[a-z]+[.]*[a-z]*$"
+            matchstring = re.match(pattern,email)
+            if matchstring:
+                return ""
+            else:
+                return "That's not a valid email"        
+
+
 
 @app.route("/",methods=['POST','GET'])
 def index():
@@ -41,15 +66,20 @@ def index():
     if request.method == 'POST':
         user= request.form['username']
 
-        error= validate_user(user)
+        user_error= validate_user(user)
         pwd= request.form['password']
+        pwd_error= validate_password(pwd)
+        email= request.form['email']
+        email_error = validate_email(email)
         verify_pwd=request.form['verify_password']
-        verify_pwd_error= validate_password(pwd,verify_pwd)
-        if not error and not verify_pwd_error:
-            return render_template("welcome.html",user=user)
-        return render_template("signup.html", usererror=error,verify_pwd_error=verify_pwd_error)
+        verify_pwd_error= verify_passwords(pwd,verify_pwd)
+        if not user_error and not verify_pwd_error and not pwd_error and not email_error:
+            #return render_template("welcome.html",user=user)
+            return redirect("/welcome?username="+user)
         
-    return "nothing"
+        return render_template("signup.html", usererror=user_error,verify_pwd_error=verify_pwd_error, pwd_error= pwd_error, email_error=email_error, username=user, email=email)
+        
+    return "something wrong"
 
 app.run()
 
